@@ -25,6 +25,7 @@ services:
       - "8080:8080"
     depends_on:
       - employee_db
+    restart: always
     networks:
       - app-network
 
@@ -35,6 +36,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80"
+    restart: always
     networks:
       - app-network
 
