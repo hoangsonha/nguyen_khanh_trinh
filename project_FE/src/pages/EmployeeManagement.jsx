@@ -20,7 +20,9 @@ import {
   FaTrash,
   FaUndo,
   FaFilter,
-  FaSync
+  FaSync,
+  FaEye,
+  FaUserCircle
 } from "react-icons/fa";
 import {
   getEmployees,
@@ -30,6 +32,7 @@ import {
   getRoles,
   restoreEmployee,
 } from "../serviceAPI/employeeService";
+import { useToast } from '../component/Toast';
 
 function EmployeeManagement() {
   const [employees, setEmployees] = useState([]);
@@ -56,6 +59,20 @@ function EmployeeManagement() {
     roleName: "ROLE_USER",
   });
 
+  const { addToast } = useToast();
+
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showModalDetail, setShowModalDetail] = useState(false);
+
+  const handleView = (emp) => {
+    setSelectedEmployee(emp);
+    setShowModalDetail(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModalDetail(false);
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -78,35 +95,6 @@ function EmployeeManagement() {
     }
   };
 
-//   const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   setError(null);
-//   setFieldErrors({});
-//   try {
-//     setLoading(true);
-//     if (isEditing) {
-//       await updateEmployee(formData, formData.id);
-//     } else {
-//       await createEmployee(formData);
-//     }
-
-//     loadData();
-//     setShowFormModal(false);
-//     resetForm();
-//     setIsEditing(false);
-//   } catch (err) {
-//     const response = err.response?.data;
-//     if (response && response.message === "Một số trường không hợp lệ") {
-//       setFieldErrors(response.data); // error.data là object: { email: "...", userName: "..." }
-//     } else {
-//       setError(response?.message || "Đã xảy ra lỗi");
-//     }
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {
@@ -127,16 +115,16 @@ const handleSubmit = async (e) => {
                     employee.id === formData.id ? { ...data } : employee
                 )
             );
-            setShowFormModal(false);
+            setShowFormModal(true);
         } else {
             setIsEditing(true);
-            alert(`Lỗi: ${result.message}`);
+            addToast(`Lỗi: ${result.message}`, false, true)
             if (result.error) {
                 setErrors(result.error)
             }
         }
     } catch (error) {
-        alert("Có lỗi xảy ra khi sửa công dụng!", error);
+        addToast(`"Có lỗi xảy ra khi sửa công dụng!: ${error}`, false, true)
     }
 
     } else {
@@ -146,23 +134,23 @@ const handleSubmit = async (e) => {
           if (result.status === "Success") {
               const data = result.data;
 
-              alert(`Bạn đã tạo công dụng với tên "${data.name}" thành công!`);
+              addToast(`Bạn đã tạo công dụng với tên "${data.name}" thành công!`, true, false)
 
               setEmployees(prevEmployee => [
                   data,
                   ...prevEmployee
               ]);
-            setShowFormModal(false);
+            setShowFormModal(true);
             setErrors({})
           } else {
               setIsEditing(false);
-              alert(`Lỗi: ${result.message}`);
+              addToast(`Lỗi: ${result.message}`, false, true)
               if (result.error) {
                   setErrors(result.error)
               }
           }
-      } catch (error) {
-          alert("Error when creating employee!", error);
+      } catch (error) { 
+          addToast(`"Có lỗi xảy ra khi tạo nhân viên!: ${error}`, false, true)
       }
     }
 
@@ -171,7 +159,7 @@ const handleSubmit = async (e) => {
     resetForm();
     setIsEditing(false);
   } catch (error) {
-      alert("Có lỗi xảy ra khi tạo công dụng!", error);
+    addToast(`"Có lỗi xảy ra khi tạo nhân viên!: ${error}`, false, true)
   } finally {
       setLoading(false);
   }
@@ -351,6 +339,52 @@ const handleSubmit = async (e) => {
         </Card.Body>
       </Card>
 
+      {showModalDetail ? (
+              <div className="text-center my-5">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">Đang tải thông tin...</p>
+              </div>
+            ) : selectedEmployee ? (
+              <Card className="shadow">
+                <Card.Header className="bg-primary text-white d-flex align-items-center">
+                  <FaUserCircle size={24} className="me-2" />
+                  <h5 className="mb-0">Thông tin cá nhân</h5>
+                </Card.Header>
+                <Card.Body>
+                  <Row className="mb-3">
+                    <Col md={6}><strong>Tên đăng nhập:</strong> {selectedEmployee.userName}</Col>
+                    <Col md={6}><strong>Họ và tên:</strong> {selectedEmployee.fullName}</Col>
+                  </Row>
+                  <Row className="mb-3">
+                    <Col md={6}><strong>Email:</strong> {selectedEmployee.email}</Col>
+                    <Col md={6}><strong>Số điện thoại:</strong> {selectedEmployee.phone}</Col>
+                  </Row>
+                  <Row className="mb-3">
+                    <Col md={6}><strong>Mã nhân viên:</strong> {selectedEmployee.code}</Col>
+                    <Col md={6}>
+                      <strong>Vai trò:</strong> <Badge bg="info">{selectedEmployee.roleName}</Badge>
+                    </Col>
+                  </Row>
+                  <Row className="mb-3">
+                    <Col md={6}>
+                      <strong>Trạng thái:</strong>{" "}
+                      <Badge bg={selectedEmployee.enabled ? "success" : "secondary"}>
+                        {selectedEmployee.enabled ? "Hoạt động" : "Không hoạt động"}
+                      </Badge>
+                    </Col>
+                    <Col md={6}>
+                      <strong>Khóa:</strong>{" "}
+                      <Badge bg={selectedEmployee.nonLocked ? "success" : "danger"}>
+                        {selectedEmployee.nonLocked ? "Không khóa" : "Đã khóa"}
+                      </Badge>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            ) : (
+              <p className="text-danger text-center">Không tìm thấy thông tin người dùng.</p>
+            )}
+
       {/* Employee Table */}
       <Card className="shadow-sm">
         <Card.Header className="bg-light">
@@ -411,6 +445,15 @@ const handleSubmit = async (e) => {
                             </Button>
                           ) : (
                             <>
+                             <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => handleView(emp)}
+                                title="Xem chi tiết"
+                                className="me-2"
+                              >
+                                <FaEye />
+                              </Button>
                               <Button
                                 variant="outline-warning"
                                 size="sm"

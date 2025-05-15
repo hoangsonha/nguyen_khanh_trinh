@@ -64,7 +64,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         if (employee != null) {
-            throw new ElementExistException("Employee already exists");
+            throw new ElementExistException("Email already exists");
         }
         if (employee2 != null) {
             throw new ElementExistException("Code already exists");

@@ -1,6 +1,5 @@
 package com.hsh.project.controller;
 
-import com.hsh.project.configuration.CustomAccountDetail;
 import com.hsh.project.dto.AccountDTO;
 import com.hsh.project.dto.internal.ObjectResponse;
 import com.hsh.project.dto.request.CreateEmployeeRequest;
@@ -9,11 +8,6 @@ import com.hsh.project.exception.BadRequestException;
 import com.hsh.project.exception.ElementExistException;
 import com.hsh.project.exception.ElementNotFoundException;
 import com.hsh.project.pojo.Employee;
-import com.hsh.project.pojo.Role;
-import com.hsh.project.pojo.enums.EnumRoleNameType;
-import com.hsh.project.repository.EmployeeRepository;
-import com.hsh.project.repository.RoleRepository;
-import com.hsh.project.service.spec.AccountService;
 import com.hsh.project.service.spec.EmployeeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,12 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -37,19 +28,6 @@ import java.util.stream.Collectors;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
-
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @GetMapping
-//    public List<AccountDTO> getAll() {
-//
-//        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
-//
-//        return employeeRepository.findAll().stream()
-//                .filter(e -> !e.getId().equals(user.getId()))
-//                .map(this::mapToDTO)
-//                .collect(Collectors.toList());
-//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/non-paging")
@@ -68,20 +46,6 @@ public class EmployeeController {
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Get hub by ID failed", null));
     }
 
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF') or hasRole('USER')")
-//    @GetMapping("/{id}")
-//    public AccountDTO getUser(@PathVariable Integer id) {
-//
-//        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
-//
-//        Employee user_found = employeeRepository.findById(id).get();
-//
-//        AccountDTO final_user = mapToDTO(user_found);
-//
-//        return final_user;
-//    }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
@@ -91,138 +55,56 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Create hub successfully", employee));
         } catch (BadRequestException e) {
             log.error("Error creating hub", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Create hub failed. " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
         } catch (ElementExistException e) {
             log.error("Error creating hub", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Create hub failed. " + e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
         } catch (Exception e) {
             log.error("Error creating hub", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Create hub failed", null));
         }
     }
 
-
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PostMapping
-//    public ResponseEntity<ObjectResponse> create(@Valid @RequestBody CreateEmployeeRequest req) {
-//        Role role = roleRepository.getRoleByRoleName(EnumRoleNameType.valueOf(req.getRoleName()));
-//
-//        Employee check_exist = employeeRepository.getAccountByEmail(req.getEmail());
-//
-//        if (check_exist != null) {
-//            throw new ElementExistException("Email đã tồn tại");
-//        }
-//
-//        Employee employee = Employee.builder()
-//                .userName(req.getUserName())
-//                .fullName(req.getFullName())
-//                .email(req.getEmail())
-//                .code(req.getCode())
-//                .phone(req.getPhone())
-//                .password(bCryptPasswordEncoder.encode(req.getPassword()))
-//                .enabled(true)
-//                .nonLocked(true)
-//                .role(role)
-//                .build();
-//
-//        employeeRepository.save(employee);
-//
-////        return ResponseEntity.ok(mapToDTO(employee));
-//        return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Add new successfully", mapToDTO(employee)));
-//    }
-
-        @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
-        @PutMapping("/{id}")
-        public ResponseEntity<ObjectResponse> updateHub(@PathVariable("id") int id, @RequestBody UpdateEmployeeRequest req) {
-            try {
-                AccountDTO employee = employeeService.updateEmployee(req, id);
-                if (employee != null) {
-                    return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update hub successfully", employee));
-                }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub is null", null));
-            } catch (BadRequestException e) {
-                log.error("Error creating hub", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Create hub failed. " + e.getMessage(), null));
-            } catch (ElementExistException e) {
-                log.error("Error while updating hub", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. " + e.getMessage(), null));
-            } catch (ElementNotFoundException e) {
-                log.error("Error while updating hub", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub not found", null));
-            } catch (Exception e) {
-                log.error("Error updating hub", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed", null));
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ObjectResponse> updateHub(@PathVariable("id") int id, @RequestBody UpdateEmployeeRequest req) {
+        try {
+            AccountDTO employee = employeeService.updateEmployee(req, id);
+            if (employee != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update hub successfully", employee));
             }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub is null", null));
+        } catch (BadRequestException e) {
+            log.error("Error creating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
+        } catch (ElementExistException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
+        } catch (ElementNotFoundException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub not found", null));
+        } catch (Exception e) {
+            log.error("Error updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed", null));
         }
+    }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ObjectResponse> update(@PathVariable Integer id, @Valid @RequestBody UpdateEmployeeRequest req) {
-////        Employee employee = employeeRepository.findById(id).orElseThrow();
-//        Role role = roleRepository.getRoleByRoleName(EnumRoleNameType.valueOf(req.getRoleName()));
-//
-//        Employee employee = employeeRepository.findById(id).get();
-//
-//        if (employee == null) {
-//            throw new ElementExistException("Nhân viên không tồn tại");
-//        }
-//
-//        employee.setUserName(req.getUserName());
-//        employee.setFullName(req.getFullName());
-//        employee.setEmail(req.getEmail());
-//        employee.setCode(req.getCode());
-//        employee.setPhone(req.getPhone());
-//        employee.setRole(role);
-//
-//        employeeRepository.save(employee);
-////        return ResponseEntity.ok(mapToDTO(employee));
-//        return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update new successfully", mapToDTO(employee)));
-//    }
-
-
-        @PreAuthorize("hasRole('ADMIN')")
-        @DeleteMapping("/{id}")
-        public ResponseEntity<ObjectResponse> deleteHubByID(@PathVariable("id") int hubID) {
-            try {
-                Employee hub = employeeService.getEmployeeById(hubID);
-                if(hub != null) {
-                    hub.setDeleted(true);
-                    hub.setEnabled(false);
-                    return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Delete hub successfully", employeeService.saveEmployee(hub)));
-                }
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
-            } catch (Exception e) {
-                log.error("Error deleting hub", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ObjectResponse> deleteHubByID(@PathVariable("id") int hubID) {
+        try {
+            Employee hub = employeeService.getEmployeeById(hubID);
+            if(hub != null) {
+                hub.setDeleted(true);
+                hub.setEnabled(false);
+                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Delete hub successfully", employeeService.saveEmployee(hub)));
             }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
+        } catch (Exception e) {
+            log.error("Error deleting hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
         }
-
-
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-//
-//
-//
-//        Employee employee = employeeRepository.findById(id).get();
-//        if(employee != null) {
-//            employee.setDeleted(true);
-//            employeeRepository.save(employee);
-//        }
-//        return ResponseEntity.noContent().build();
-//    }
-
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PostMapping("/restore/{id}")
-//    public ResponseEntity<Void> resotre(@PathVariable Integer id) {
-//        Employee employee = employeeRepository.findById(id).get();
-//        if(employee != null) {
-//            employee.setDeleted(false);
-//            employeeRepository.save(employee);
-//        }
-//        return ResponseEntity.ok().build();
-//    }
-//
+    }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     @PostMapping("/{id}/restore")
@@ -234,7 +116,7 @@ public class EmployeeController {
                 hub.setEnabled(true);
                 return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "UnDelete hub successfully", employeeService.saveEmployee(hub)));
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Undelete hub failed. Employee is null", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Employee is null", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Undelete hub failed", null));
         }
