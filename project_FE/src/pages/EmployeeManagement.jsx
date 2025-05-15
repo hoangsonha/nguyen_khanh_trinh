@@ -339,7 +339,12 @@ const handleSubmit = async (e) => {
         </Card.Body>
       </Card>
 
-      {showModalDetail ? (
+      <Modal show={showModalDetail} onHide={handleCloseModal} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Thông tin chi tiết nhân viên</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {!selectedEmployee ? (
               <div className="text-center my-5">
                 <Spinner animation="border" variant="primary" />
                 <p className="mt-3">Đang tải thông tin...</p>
@@ -384,6 +389,13 @@ const handleSubmit = async (e) => {
             ) : (
               <p className="text-danger text-center">Không tìm thấy thông tin người dùng.</p>
             )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Employee Table */}
       <Card className="shadow-sm">
