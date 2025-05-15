@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 spring:
   application:
     name: Project HSH
@@ -19,8 +19,8 @@ spring:
 
   # DATABASE
   datasource:
-    url: jdbc:mysql://employee_db:3306/sgiant_project
-#    url: jdbc:mysql://localhost:3306/sgiant_project
+#    url: jdbc:mysql://employee_db:3306/sgiant_project
+    url: jdbc:mysql://localhost:3306/sgiant_project
     username: root
     password: 123456789
   jpa:
