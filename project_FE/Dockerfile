@@ -19,10 +19,10 @@ RUN npm run build
 FROM nginx:alpine
 
 # Set environment variables
-# ENV VITE_API_URL=http://128.199.177.223:8888
-ENV VITE_API_URL=http://backend:8080
+ENV VITE_API_URL=http://128.199.177.223:8888
+# ENV VITE_API_URL=http://backend:8080
 
-RUN VITE_API_URL=$VITE_API_URL npm run build
+# RUN VITE_API_URL=$VITE_API_URL npm run build
 
 # Copy the build output to the Nginx server
 COPY --from=build /app/dist /usr/share/nginx/html
