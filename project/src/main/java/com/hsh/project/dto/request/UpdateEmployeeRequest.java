@@ -18,9 +18,9 @@ public class UpdateEmployeeRequest {
     @NotBlank(message = "Họ tên không được để trống")
     String fullName;
 
-    @Email(message = "Email không hợp lệ")
-    @NotBlank(message = "Email không được để trống")
-    String email;
+//    @Email(message = "Email không hợp lệ")
+//    @NotBlank(message = "Email không được để trống")
+//    String email;
 
     @NotBlank(message = "Mã nhân viên không được để trống")
     String code;

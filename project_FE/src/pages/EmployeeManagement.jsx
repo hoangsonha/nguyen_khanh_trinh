@@ -39,10 +39,7 @@ function EmployeeManagement() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [fieldErrors, setFieldErrors] = useState({});
-const [globalError, setGlobalError] = useState(null);
-
-  console.log("golabel error ne", globalError)
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     userName: "",
@@ -71,7 +68,7 @@ const [globalError, setGlobalError] = useState(null);
         getEmployees(),
         getRoles()
       ]);
-      setEmployees(employeesRes.data);
+      setEmployees(employeesRes.data.data);
       setRoles(rolesRes.data);
     } catch (err) {
       setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -109,45 +106,74 @@ const [globalError, setGlobalError] = useState(null);
 //   }
 // };
 
+
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {
     setLoading(true);
-    setFieldErrors({});
-    setGlobalError(null);
 
     if (isEditing) {
-      await updateEmployee(formData, formData.id);
+
+      try {
+        const result = await  await updateEmployee(formData, formData.id);
+
+        if (result.status === "Success") {
+            const data = result.data;
+
+            alert(`Update employee with code "${data.code}" successfully!`);
+
+            setEmployees(prevEmployee =>
+                prevEmployee.map(employee =>
+                    employee.id === formData.id ? { ...data } : employee
+                )
+            );
+            setShowFormModal(false);
+        } else {
+            setIsEditing(true);
+            alert(`Lỗi: ${result.message}`);
+            if (result.error) {
+                setErrors(result.error)
+            }
+        }
+    } catch (error) {
+        alert("Có lỗi xảy ra khi sửa công dụng!", error);
+    }
+
     } else {
-      await createEmployee(formData);
+        try {
+          const result = await createEmployee(formData);
+
+          if (result.status === "Success") {
+              const data = result.data;
+
+              alert(`Bạn đã tạo công dụng với tên "${data.name}" thành công!`);
+
+              setEmployees(prevEmployee => [
+                  data,
+                  ...prevEmployee
+              ]);
+            setShowFormModal(false);
+            setErrors({})
+          } else {
+              setIsEditing(false);
+              alert(`Lỗi: ${result.message}`);
+              if (result.error) {
+                  setErrors(result.error)
+              }
+          }
+      } catch (error) {
+          alert("Error when creating employee!", error);
+      }
     }
 
     loadData();
     setShowFormModal(false);
     resetForm();
     setIsEditing(false);
-  } catch (err) {
-    const res = err.response?.data;
-    console.error("Lỗi khi create/update:", err);
-
-    if (err?.response.status == 400) {
-      if (err.response.data.message === "Một số trường không hợp lệ") {
-
-        console.log(err.response.data.message)
-        console.log(err.response.data.error)
-
-        setFieldErrors(err.response.data.error);
-      } else if (err.response.data.message === "Phần tử đã tồn tại") {
-        setGlobalError(err.response.data.error);
-      } else {
-
-        setGlobalError(err.response.data.error || "Đã xảy ra lỗi.");
-      }
-    } else {
-      setGlobalError("Không thể kết nối tới máy chủ.");
-    }
+  } catch (error) {
+      alert("Có lỗi xảy ra khi tạo công dụng!", error);
   } finally {
-    setLoading(false);
+      setLoading(false);
   }
 };
 
@@ -432,11 +458,11 @@ const handleSubmit = async (e) => {
   </Modal.Header>
 
   <Modal.Body>
-    {globalError && (
+    {/* {globalError && (
   <Alert variant="danger" onClose={() => setGlobalError(null)} dismissible>
     {globalError}
   </Alert>
-)}
+)} */}
     <Form onSubmit={handleSubmit}>
       <Row>
         <Col md={6}>
@@ -477,14 +503,12 @@ const handleSubmit = async (e) => {
               name="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              
               required
-              // className="py-2 fs-5"
-              className={`py-2 fs-5 ${fieldErrors.email ? "is-invalid" : ""}`}
+              className="py-2 fs-5"
+              isInvalid={!!errors.email}
+
             />
-              {fieldErrors.email && (
-                <div className="invalid-feedback">{fieldErrors.email}</div>
-              )}
+              <Form.Control.Feedback type="invalid">{errors?.email}</Form.Control.Feedback>
           </Form.Group>
         </Col>
         <Col md={6}>
@@ -496,7 +520,9 @@ const handleSubmit = async (e) => {
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="py-2 fs-5"
+              isInvalid={!!errors.phone}
             />
+            <Form.Control.Feedback type="invalid">{errors?.phone}</Form.Control.Feedback>
           </Form.Group>
         </Col>
       </Row>
@@ -511,7 +537,9 @@ const handleSubmit = async (e) => {
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
               className="py-2 fs-5"
+              isInvalid={!!errors.code}
             />
+            <Form.Control.Feedback type="invalid">{errors?.code}</Form.Control.Feedback>
           </Form.Group>
         </Col>
         <Col md={6}>
@@ -544,7 +572,9 @@ const handleSubmit = async (e) => {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 className="py-2 fs-5"
-              />
+              isInvalid={!!errors.password}
+            />
+            <Form.Control.Feedback type="invalid">{errors?.password}</Form.Control.Feedback>
             </Form.Group>
           </Col>
         </Row>

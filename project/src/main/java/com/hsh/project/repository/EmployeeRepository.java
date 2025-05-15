@@ -19,4 +19,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     Optional<Employee> getAccountByEmailAndDeletedIsFalse(String email);
 
+    Employee findByEmail(String email);
+
+    Employee findByCode(String code);
+
+    Employee findByPhone(String phone);
+
 }

@@ -6,12 +6,12 @@ const API_ROLE = "/api/v1/roles";
 
 export const getEmployees = async () => {
   try {
-    const res = await get(API);
+    const res = await get(API + "/non-paging");
     return res;
-  } catch (e) {
-    console.error("Lỗi khi getEmployees:", e);
-    return [];
-  }
+  } catch (error) {
+        console.log(error);
+        return [];
+    }
 };
 
 export const getEmployeeById = async (id) => {
@@ -37,8 +37,14 @@ export const createEmployee = async (params) => {
   try {
     const res = await post(API, params);
     return res;
-  } catch (e) {
-    console.error("Lỗi khi createEmployee:", e);
+  } catch (error) {
+    if (error.response) {
+        console.error("Error response from server:", error.response.data);
+        return error.response.data;
+    } else {
+        console.error("Unexpected error:", error);
+        return { status: "Fail", message: "Unexpected error occurred.", data: null };
+    }
   }
 };
 
@@ -46,8 +52,14 @@ export const updateEmployee = async (params, id) => {
   try {
     const res = await put(`${API}/${id}`, params);
     return res;
-  } catch (e) {
-    console.error("Lỗi khi updateEmployee:", e);
+  } catch (error) {
+    if (error.response) {
+        console.error("Error response from server:", error.response.data);
+        return error.response.data;
+    } else {
+        console.error("Unexpected error:", error);
+        return { status: "Fail", message: "Unexpected error occurred.", data: null };
+    }
   }
 };
 
@@ -55,16 +67,28 @@ export const deleteEmployee = async (id) => {
   try {
     const res = await remove(`${API}/${id}`);
     return res;
-  } catch (e) {
-    console.error("Lỗi khi deleteEmployee:", e);
-  }
+  } catch (error) {
+        if (error.response) {
+            console.error("Error response from server:", error.response.data);
+            return error.response.data;
+        } else {
+            console.error("Unexpected error:", error);
+            return { status: "Fail", message: "Unexpected error occurred.", data: null };
+        }
+    }
 };
 
 export const restoreEmployee = async (id) => {
   try {
-    const res = await post(`${API}/restore/${id}`);
+    const res = await post(`${API}/${id}/restore`);
     return res;
-  } catch (e) {
-    console.error("Lỗi khi deleteEmployee:", e);
-  }
+  } catch (error) {
+        if (error.response) {
+            console.error("Error response from server:", error.response.data);
+            return error.response.data;
+        } else {
+            console.error("Unexpected error:", error);
+            return { status: "Fail", message: "Unexpected error occurred.", data: null };
+        }
+    }
 };
