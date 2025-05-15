@@ -88,7 +88,7 @@ function EmployeeManagement() {
       setEmployees(employeesRes.data.data);
       setRoles(rolesRes.data);
     } catch (err) {
-      setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+      setError("Failed to load data. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -124,7 +124,7 @@ const handleSubmit = async (e) => {
             }
         }
     } catch (error) {
-        addToast(`"Có lỗi xảy ra khi sửa công dụng!: ${error}`, false, true)
+        addToast(`"An error occur when updating employee!: ${error}`, false, true)
     }
 
     } else {
@@ -134,7 +134,7 @@ const handleSubmit = async (e) => {
           if (result.status === "Success") {
               const data = result.data;
 
-              addToast(`Bạn đã tạo công dụng với tên "${data.name}" thành công!`, true, false)
+              addToast(`Create employee with code "${data.code}" successfully!`, true, false)
 
               setEmployees(prevEmployee => [
                   data,
@@ -150,7 +150,7 @@ const handleSubmit = async (e) => {
               }
           }
       } catch (error) { 
-          addToast(`"Có lỗi xảy ra khi tạo nhân viên!: ${error}`, false, true)
+          addToast(`An error occur when adding employee!: ${error}`, false, true)
       }
     }
 
@@ -159,7 +159,7 @@ const handleSubmit = async (e) => {
     resetForm();
     setIsEditing(false);
   } catch (error) {
-    addToast(`"Có lỗi xảy ra khi tạo nhân viên!: ${error}`, false, true)
+    addToast(`An error occur when adding or updating employee!: ${error}`, false, true)
   } finally {
       setLoading(false);
   }
@@ -184,13 +184,13 @@ const handleSubmit = async (e) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa nhân viên này?")) {
+    if (window.confirm("Are you sure to delete this employee?")) {
       try {
         setLoading(true);
         await deleteEmployee(id);
         loadData();
       } catch (err) {
-        setError("Không thể xóa nhân viên");
+        setError("Cannot delete this employee");
         console.error(err);
       } finally {
         setLoading(false);
@@ -204,7 +204,7 @@ const handleSubmit = async (e) => {
       await restoreEmployee(id);
       loadData();
     } catch (err) {
-      setError("Không thể khôi phục nhân viên");
+      setError("Cannot restore employee");
       console.error(err);
     } finally {
       setLoading(false);
@@ -232,7 +232,7 @@ const handleSubmit = async (e) => {
 
   const renderStatus = (value) => (
     <Badge bg={value ? "secondary" : "success"} className="fs-6">
-      {value ? "Đã xóa" : "Hoạt động"}
+      {value ? "Deleted" : "Actived"}
     </Badge>
   );
 
@@ -243,7 +243,7 @@ const handleSubmit = async (e) => {
         <Col>
           <h2 className="fw-bold text-center">
             <i className="bi bi-people-fill me-2"></i>
-            Quản lý nhân viên
+            MANAGER EMPLOYEES
           </h2>
           <hr />
         </Col>
@@ -260,14 +260,14 @@ const handleSubmit = async (e) => {
         <Card.Header className="bg-light">
           <h5 className="mb-0">
             <FaFilter className="me-2" />
-            Bộ lọc tìm kiếm
+            Search
           </h5>
         </Card.Header>
         <Card.Body>
           <Row>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Tên đăng nhập</Form.Label>
+                <Form.Label>User name</Form.Label>
                 <InputGroup>
                   <Form.Control
                     placeholder="Tìm theo tên đăng nhập"
@@ -284,7 +284,7 @@ const handleSubmit = async (e) => {
             </Col>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Họ và tên</Form.Label>
+                <Form.Label>Full name</Form.Label>
                 <InputGroup>
                   <Form.Control
                     placeholder="Tìm theo họ tên"
@@ -324,7 +324,7 @@ const handleSubmit = async (e) => {
               onClick={() => setFilters({ userName: "", fullName: "", email: "" })}
             >
               <FaSync className="me-2" />
-              Làm mới
+              Refresh
             </Button>
 
             <Button
@@ -333,7 +333,7 @@ const handleSubmit = async (e) => {
               onClick={() => setShowFormModal(true)}
             >
               <FaPlus className="me-2" />
-              Thêm nhân viên
+              Add new employee
             </Button>
           </div>
         </Card.Body>
@@ -341,58 +341,58 @@ const handleSubmit = async (e) => {
 
       <Modal show={showModalDetail} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Thông tin chi tiết nhân viên</Modal.Title>
+          <Modal.Title>Detail Employee</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {!selectedEmployee ? (
               <div className="text-center my-5">
                 <Spinner animation="border" variant="primary" />
-                <p className="mt-3">Đang tải thông tin...</p>
+                <p className="mt-3">Loading...</p>
               </div>
             ) : selectedEmployee ? (
               <Card className="shadow">
                 <Card.Header className="bg-primary text-white d-flex align-items-center">
                   <FaUserCircle size={24} className="me-2" />
-                  <h5 className="mb-0">Thông tin cá nhân</h5>
+                  <h5 className="mb-0">Infomation</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row className="mb-3">
-                    <Col md={6}><strong>Tên đăng nhập:</strong> {selectedEmployee.userName}</Col>
-                    <Col md={6}><strong>Họ và tên:</strong> {selectedEmployee.fullName}</Col>
+                    <Col md={6}><strong>User name:</strong> {selectedEmployee.userName}</Col>
+                    <Col md={6}><strong>Full name:</strong> {selectedEmployee.fullName}</Col>
                   </Row>
                   <Row className="mb-3">
                     <Col md={6}><strong>Email:</strong> {selectedEmployee.email}</Col>
-                    <Col md={6}><strong>Số điện thoại:</strong> {selectedEmployee.phone}</Col>
+                    <Col md={6}><strong>Phone:</strong> {selectedEmployee.phone}</Col>
                   </Row>
                   <Row className="mb-3">
-                    <Col md={6}><strong>Mã nhân viên:</strong> {selectedEmployee.code}</Col>
+                    <Col md={6}><strong>Code:</strong> {selectedEmployee.code}</Col>
                     <Col md={6}>
-                      <strong>Vai trò:</strong> <Badge bg="info">{selectedEmployee.roleName}</Badge>
+                      <strong>Role:</strong> <Badge bg="info">{selectedEmployee.roleName}</Badge>
                     </Col>
                   </Row>
                   <Row className="mb-3">
                     <Col md={6}>
-                      <strong>Trạng thái:</strong>{" "}
+                      <strong>Status:</strong>{" "}
                       <Badge bg={selectedEmployee.enabled ? "success" : "secondary"}>
-                        {selectedEmployee.enabled ? "Hoạt động" : "Không hoạt động"}
+                        {selectedEmployee.enabled ? "Actived" : "Inactived"}
                       </Badge>
                     </Col>
                     <Col md={6}>
                       <strong>Khóa:</strong>{" "}
                       <Badge bg={selectedEmployee.nonLocked ? "success" : "danger"}>
-                        {selectedEmployee.nonLocked ? "Không khóa" : "Đã khóa"}
+                        {selectedEmployee.nonLocked ? "Non locked" : "Locked"}
                       </Badge>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
             ) : (
-              <p className="text-danger text-center">Không tìm thấy thông tin người dùng.</p>
+              <p className="text-danger text-center">Cannot load this employee</p>
             )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Đóng
+            Close
           </Button>
         </Modal.Footer>
       </Modal>
@@ -400,13 +400,13 @@ const handleSubmit = async (e) => {
       {/* Employee Table */}
       <Card className="shadow-sm">
         <Card.Header className="bg-light">
-          <h5 className="mb-0">Danh sách nhân viên</h5>
+          <h5 className="mb-0">List employees</h5>
         </Card.Header>
         <Card.Body>
           {loading ? (
             <div className="text-center py-5">
               <Spinner animation="border" variant="primary" />
-              <p className="mt-3">Đang tải dữ liệu...</p>
+              <p className="mt-3">Loading...</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -414,14 +414,14 @@ const handleSubmit = async (e) => {
                 <thead className="table-dark">
                   <tr>
                     <th width="5%">#</th>
-                    <th width="15%">Tên đăng nhập</th>
-                    <th width="15%">Họ và tên</th>
-                    <th width="10%">Mã NV</th>
+                    <th width="15%">User name</th>
+                    <th width="15%">Full name</th>
+                    <th width="10%">Code</th>
                     <th width="15%">Email</th>
-                    <th width="10%">SĐT</th>
-                    <th width="10%">Vai trò</th>
-                    <th width="10%">Trạng thái</th>
-                    <th width="10%">Hành động</th>
+                    <th width="10%">Phone</th>
+                    <th width="10%">Role</th>
+                    <th width="10%">Status</th>
+                    <th width="10%">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -450,7 +450,7 @@ const handleSubmit = async (e) => {
                               variant="outline-success"
                               size="sm"
                               onClick={() => handleRestore(emp.id)}
-                              title="Khôi phục"
+                              title="Restore"
                               className="me-2"
                             >
                               <FaUndo />
@@ -461,7 +461,7 @@ const handleSubmit = async (e) => {
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={() => handleView(emp)}
-                                title="Xem chi tiết"
+                                title="Detail"
                                 className="me-2"
                               >
                                 <FaEye />
@@ -470,7 +470,7 @@ const handleSubmit = async (e) => {
                                 variant="outline-warning"
                                 size="sm"
                                 onClick={() => handleEdit(emp)}
-                                title="Chỉnh sửa"
+                                title="Edit"
                                 className="me-2"
                               >
                                 <FaEdit />
@@ -479,7 +479,7 @@ const handleSubmit = async (e) => {
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => handleDelete(emp.id)}
-                                title="Xóa"
+                                title="Delete"
                               >
                                 <FaTrash />
                               </Button>
@@ -502,11 +502,11 @@ const handleSubmit = async (e) => {
     <Modal.Title className="d-flex align-items-center">
       {isEditing ? (
         <>
-          <FaEdit className="me-2" /> Cập nhật thông tin nhân viên
+          <FaEdit className="me-2" /> Edit
         </>
       ) : (
         <>
-          <FaPlus className="me-2" /> Thêm nhân viên mới
+          <FaPlus className="me-2" /> Add
         </>
       )}
     </Modal.Title>
@@ -522,7 +522,7 @@ const handleSubmit = async (e) => {
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold fs-5">Tên đăng nhập</Form.Label>
+            <Form.Label className="fw-semibold fs-5">User name</Form.Label>
             <Form.Control
               type="text"
               name="userName"
@@ -536,7 +536,7 @@ const handleSubmit = async (e) => {
         </Col>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold fs-5">Họ và tên</Form.Label>
+            <Form.Label className="fw-semibold fs-5">Full name</Form.Label>
             <Form.Control
               type="text"
               name="fullName"
@@ -568,7 +568,7 @@ const handleSubmit = async (e) => {
         </Col>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold fs-5">Số điện thoại</Form.Label>
+            <Form.Label className="fw-semibold fs-5">Phone</Form.Label>
             <Form.Control
               type="text"
               name="phone"
@@ -585,7 +585,7 @@ const handleSubmit = async (e) => {
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold fs-5">Mã nhân viên</Form.Label>
+            <Form.Label className="fw-semibold fs-5">Code</Form.Label>
             <Form.Control
               type="text"
               name="code"
@@ -599,7 +599,7 @@ const handleSubmit = async (e) => {
         </Col>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold fs-5">Vai trò</Form.Label>
+            <Form.Label className="fw-semibold fs-5">Role</Form.Label>
             <Form.Select
               value={formData.roleName}
               onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
@@ -619,7 +619,7 @@ const handleSubmit = async (e) => {
         <Row>
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold fs-5">Mật khẩu</Form.Label>
+              <Form.Label className="fw-semibold fs-5">Password</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
@@ -641,15 +641,15 @@ const handleSubmit = async (e) => {
           resetForm();
           setIsEditing(false);
         }}>
-          Hủy bỏ
+          Cancel
         </Button>
         <Button variant="primary" type="submit" disabled={loading}>
           {loading ? (
             <>
               <Spinner animation="border" size="sm" className="me-2" />
-              Đang lưu...
+              Saving...
             </>
-          ) : isEditing ? "Cập nhật" : "Thêm mới"}
+          ) : isEditing ? "Edit" : "Add"}
         </Button>
       </div>
     </Form>

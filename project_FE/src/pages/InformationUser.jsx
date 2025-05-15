@@ -30,53 +30,53 @@ function InformationUser() {
     <Container className="mt-4">
       <Button variant="secondary" className="mb-3" onClick={() => navigate(-1)}>
         <FaArrowLeft className="me-2" />
-        Quay lại
+        Close
       </Button>
 
       {loading ? (
         <div className="text-center my-5">
           <Spinner animation="border" variant="primary" />
-          <p className="mt-3">Đang tải thông tin...</p>
+          <p className="mt-3">Loading...</p>
         </div>
       ) : userLogin ? (
         <Card className="shadow">
           <Card.Header className="bg-primary text-white d-flex align-items-center">
             <FaUserCircle size={24} className="me-2" />
-            <h5 className="mb-0">Thông tin cá nhân</h5>
+            <h5 className="mb-0">Information</h5>
           </Card.Header>
           <Card.Body>
             <Row className="mb-3">
-              <Col md={6}><strong>Tên đăng nhập:</strong> {userLogin.userName}</Col>
-              <Col md={6}><strong>Họ và tên:</strong> {userLogin.fullName}</Col>
+              <Col md={6}><strong>User name:</strong> {userLogin.userName}</Col>
+              <Col md={6}><strong>Full name:</strong> {userLogin.fullName}</Col>
             </Row>
             <Row className="mb-3">
               <Col md={6}><strong>Email:</strong> {userLogin.email}</Col>
-              <Col md={6}><strong>Số điện thoại:</strong> {userLogin.phone}</Col>
+              <Col md={6}><strong>Phone:</strong> {userLogin.phone}</Col>
             </Row>
             <Row className="mb-3">
-              <Col md={6}><strong>Mã nhân viên:</strong> {userLogin.code}</Col>
+              <Col md={6}><strong>Code:</strong> {userLogin.code}</Col>
               <Col md={6}>
-                <strong>Vai trò:</strong> <Badge bg="info">{userLogin.roleName}</Badge>
+                <strong>Role:</strong> <Badge bg="info">{userLogin.roleName}</Badge>
               </Col>
             </Row>
             <Row className="mb-3">
               <Col md={6}>
-                <strong>Trạng thái:</strong>{" "}
+                <strong>Status:</strong>{" "}
                 <Badge bg={userLogin.enabled ? "success" : "secondary"}>
-                  {userLogin.enabled ? "Hoạt động" : "Không hoạt động"}
+                  {userLogin.enabled ? "Actived" : "Inactived"}
                 </Badge>
               </Col>
               <Col md={6}>
-                <strong>Khóa:</strong>{" "}
+                <strong>Locked:</strong>{" "}
                 <Badge bg={userLogin.nonLocked ? "success" : "danger"}>
-                  {userLogin.nonLocked ? "Không khóa" : "Đã khóa"}
+                  {userLogin.nonLocked ? "Non locked" : "Locked"}
                 </Badge>
               </Col>
             </Row>
           </Card.Body>
         </Card>
       ) : (
-        <p className="text-danger text-center">Không tìm thấy thông tin người dùng.</p>
+        <p className="text-danger text-center">Not found this employee.</p>
       )}
     </Container>
   );
