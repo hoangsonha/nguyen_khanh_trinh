@@ -2,6 +2,7 @@ package com.hsh.project.service.impl;
 
 import com.hsh.project.configuration.CustomAccountDetail;
 import com.hsh.project.dto.AccountDTO;
+import com.hsh.project.dto.internal.PagingResponse;
 import com.hsh.project.dto.request.CreateEmployeeRequest;
 import com.hsh.project.dto.request.UpdateEmployeeRequest;
 import com.hsh.project.exception.BadRequestException;
@@ -14,11 +15,18 @@ import com.hsh.project.pojo.enums.EnumRoleNameType;
 import com.hsh.project.repository.EmployeeRepository;
 import com.hsh.project.repository.RoleRepository;
 import com.hsh.project.service.spec.EmployeeService;
+import com.hsh.project.utils.EmployeeSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +38,111 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final AccountMapper accountMapper;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Override
+    public PagingResponse getAllAccountPaging(Integer currentPage, Integer pageSize) {
+        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
+
+        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
+
+        var pageData = employeeRepository.findAll(pageable);
+
+        return !pageData.getContent().isEmpty() ? PagingResponse.builder()
+                .code("Success")
+                .message("Get all account paging successfully")
+                .currentPage(currentPage)
+                .pageSize(pageSize)
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .data(pageData.getContent().stream()
+                        .map(accountMapper::accountToAccountDTO)
+                        .toList())
+                .build() :
+                PagingResponse.builder()
+                        .code("Failed")
+                        .message("Get all account paging failed")
+                        .currentPage(currentPage)
+                        .pageSize(pageSize)
+                        .totalElements(pageData.getTotalElements())
+                        .totalPages(pageData.getTotalPages())
+                        .data(pageData.getContent().stream()
+                                .map(accountMapper::accountToAccountDTO)
+                                .toList())
+                        .build();
+    }
+
+    @Override
+    public PagingResponse searchEmployees(Integer currentPage, Integer pageSize, String userName, String fullName, String email) {
+        Pageable pageable;
+
+        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
+
+        Specification<Employee> spec = Specification.where(null);
+
+        List<String> keys = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+
+        String searchName = "";
+        if (StringUtils.hasText(userName)) {
+            searchName = userName;
+        }
+        keys.add("userName");
+        values.add(searchName);
+
+        String searchFullName = "";
+        if (StringUtils.hasText(fullName)) {
+            searchFullName = fullName;
+        }
+        keys.add("fullName");
+        values.add(searchFullName);
+
+        String searchEmail = "";
+        if (StringUtils.hasText(email)) {
+            searchEmail = email;
+        }
+        keys.add("email");
+        values.add(searchEmail);
+
+        if(keys.size() == values.size()) {
+            for(int i = 0; i < keys.size(); i++) {
+                String field = keys.get(i);
+                String value = values.get(i);
+                Specification<Employee> newSpec = EmployeeSpecification.searchByField(field, value);
+                if(newSpec != null) {
+                    spec = spec.and(newSpec);
+                }
+            }
+        }
+
+        pageable = PageRequest.of(currentPage - 1, pageSize);
+
+        var pageData = employeeRepository.findAll(spec, pageable);
+
+        return !pageData.getContent().isEmpty() ? PagingResponse.builder()
+                .code("Success")
+                .message("Get all employees paging successfully")
+                .currentPage(currentPage)
+                .pageSize(pageSize)
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .data(pageData.getContent().stream()
+                        .map(accountMapper::accountToAccountDTO)
+                        .toList())
+                .build() :
+                PagingResponse.builder()
+                        .code("Failed")
+                        .message("Get all employees paging failed")
+                        .currentPage(currentPage)
+                        .pageSize(pageSize)
+                        .totalElements(pageData.getTotalElements())
+                        .totalPages(pageData.getTotalPages())
+                        .data(pageData.getContent().stream()
+                                .map(accountMapper::accountToAccountDTO)
+                                .toList())
+                        .build();
+    }
 
     @Override
     public List<AccountDTO> getAccounts() {

@@ -2,6 +2,7 @@ package com.hsh.project.controller;
 
 import com.hsh.project.dto.AccountDTO;
 import com.hsh.project.dto.internal.ObjectResponse;
+import com.hsh.project.dto.internal.PagingResponse;
 import com.hsh.project.dto.request.CreateEmployeeRequest;
 import com.hsh.project.dto.request.UpdateEmployeeRequest;
 import com.hsh.project.exception.BadRequestException;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,12 +31,44 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
+    @Value("${application.default-current-page}")
+    private int defaultCurrentPage;
+
+    @Value("${application.default-page-size}")
+    private int defaultPageSize;
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("")
+    public ResponseEntity<PagingResponse> getAllPurposes(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                         @RequestParam(value = "pageSize", required = false) Integer pageSize) {
+        int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
+        int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;
+        PagingResponse results = employeeService.getAllAccountPaging(resolvedCurrentPage, resolvedPageSize);
+        List<?> data = (List<?>) results.getData();
+        return ResponseEntity.status(!data.isEmpty() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(results);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/non-paging")
     public ResponseEntity<ObjectResponse> getAllAccountsNonPaging() {
         List<AccountDTO> results = employeeService.getAccounts();
         return !results.isEmpty() ? ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "get all hub non paging successfully", results)) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Failed", "get all hub non paging failed", results));
+    }
+
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @GetMapping("/search")
+    public ResponseEntity<PagingResponse> searchVaccines(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                         @RequestParam(value = "pageSize", required = false) Integer pageSize,
+                                                         @RequestParam(value = "userName", required = false, defaultValue = "") String userName,
+                                                         @RequestParam(value = "fullName", required = false, defaultValue = "") String fullName,
+                                                         @RequestParam(value = "email", required = false, defaultValue = "") String email) {
+        int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
+        int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PagingResponse results = employeeService.searchEmployees(resolvedCurrentPage, resolvedPageSize, userName, fullName, email);
+        List<?> data = (List<?>) results.getData();
+        return ResponseEntity.status(!data.isEmpty() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(results);
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('MANAGER') or hasRole('STAFF') or hasRole('ADMIN')")
@@ -82,7 +116,7 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
         } catch (ElementNotFoundException e) {
             log.error("Error while updating hub", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub not found", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update Employee failed. Employee not found", null));
         } catch (Exception e) {
             log.error("Error updating hub", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed", null));

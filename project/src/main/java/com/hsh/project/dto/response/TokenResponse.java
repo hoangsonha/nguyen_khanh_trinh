@@ -14,5 +14,5 @@ public class TokenResponse {
     String token;
     String refreshToken;
     Integer userId;
-    String fullName;
+    String email;
 }

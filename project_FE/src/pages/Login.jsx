@@ -5,7 +5,7 @@ import { UserContext } from "../App";
 import { DEFAULT_PATHS } from "../auth/Roles";
 import { login } from "../serviceAPI/loginApi";
 import { jwtDecode } from "jwt-decode";
-import "./Login.css"; // Tạo file CSS riêng cho hiệu ứng
+import "./Login.css";
 
 const Login = () => {
     const [inputUsername, setInputUsername] = useState("");
@@ -28,7 +28,7 @@ const Login = () => {
             const user = {
                 accessToken: userFetch['token'],
                 refreshToken: userFetch['refreshToken'],
-                fullName: userFetch['fullName'],
+                email: userFetch['email'],
                 id: userFetch['userId'],
                 role: role
             }

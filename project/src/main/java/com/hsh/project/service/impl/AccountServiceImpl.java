@@ -132,7 +132,7 @@ public class AccountServiceImpl implements AccountService {
                     .code("Success")
                     .message("Success")
                     .userId(user.getId())
-                    .fullName(user.getFullName())
+                    .email(user.getEmail())
                     .token(token)
                     .refreshToken(refreshToken)
                     .build();

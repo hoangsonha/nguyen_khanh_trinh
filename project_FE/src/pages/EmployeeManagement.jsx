@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Form,
@@ -11,7 +11,8 @@ import {
   Badge,
   Spinner,
   Alert,
-  Card
+  Card,
+  Pagination
 } from "react-bootstrap";
 import {
   FaSearch,
@@ -31,16 +32,29 @@ import {
   updateEmployee,
   getRoles,
   restoreEmployee,
+  getEmployeePaging,
+  search
 } from "../serviceAPI/employeeService";
 import { useToast } from '../component/Toast';
+import { UserContext } from '../App';
 
 function EmployeeManagement() {
+
+  const { user } = useContext(UserContext);
+
   const [employees, setEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [totalElement, setTotalElement] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  const [isSearching, setIsSearching] = useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -74,55 +88,102 @@ function EmployeeManagement() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isSearching) return;
+    setLoading(true);
+    const apiAll = async () => {
+        const params = {
+            currentPage: currentPage,
+            pageSize: itemsPerPage
+        };
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [employeesRes, rolesRes] = await Promise.all([
-        getEmployees(),
-        getRoles()
-      ]);
-      setEmployees(employeesRes.data.data);
-      setRoles(rolesRes.data);
-    } catch (err) {
-      setError("Failed to load data. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+        try {
+            const resultPurposes = await getEmployeePaging(params);
+            const rolesRes = await getRoles();
+
+            setRoles(rolesRes.data);
+            setTotalElement(resultPurposes.data.totalElements);
+            setTotalPage(resultPurposes.data.totalPages);
+            setCurrentPage(resultPurposes.data.currentPage);
+            setEmployees(resultPurposes.data.data);
+
+        } catch (error) {
+            console.error("Có lỗi xảy ra khi gọi api công dụng:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    apiAll();
+  }, [currentPage, itemsPerPage, isSearching]);
+  
+   useEffect(() => {
+        if (!filters.userName && !filters.fullName && !filters.email) {
+            setIsSearching(false);
+        } else {
+            setIsSearching(true);
+        }
+    }, [filters]);
+
+    useEffect(() => {
+
+        if (!isSearching) return;
+
+        setLoading(true);
+        const searchApi = async () => {
+
+            const resolvedFilters = {
+                ...filters,
+                currentPage: currentPage,
+                pageSize: itemsPerPage,
+            };
+
+            const resultVaccineUses = await search(resolvedFilters);
+
+            if (resultVaccineUses.status === 200) {
+                setEmployees(resultVaccineUses.data.data);
+ 
+            } else {
+                setEmployees([]);
+            }
+            setTotalElement(resultVaccineUses.data.totalElements);
+            setTotalPage(resultVaccineUses.data.totalPages);
+            setCurrentPage(resultVaccineUses.data.currentPage);
+        }
+        searchApi();
+        setLoading(false);
+    
+    }, [filters, currentPage, isSearching, itemsPerPage])
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
 
-    if (isEditing) {
+      if (isEditing) {
 
-      try {
-        const result = await  await updateEmployee(formData, formData.id);
+        try {
+          const result = await  await updateEmployee(formData, formData.id);
 
-        if (result.status === "Success") {
-            const data = result.data;
+          if (result.status === "Success") {
+              const data = result.data;
 
-            alert(`Update employee with code "${data.code}" successfully!`);
+              addToast(`Update employee with code "${data.code}" successfully!`, true, false);
 
-            setEmployees(prevEmployee =>
-                prevEmployee.map(employee =>
-                    employee.id === formData.id ? { ...data } : employee
-                )
-            );
-            setShowFormModal(true);
-        } else {
-            setIsEditing(true);
-            addToast(`Lỗi: ${result.message}`, false, true)
-            if (result.error) {
-                setErrors(result.error)
-            }
-        }
+              setEmployees(prevEmployee =>
+                  prevEmployee.map(employee =>
+                      employee.id === formData.id ? { ...data } : employee
+                  )
+              );
+              setIsEditing(false)
+              setShowFormModal(false);
+          } else {
+              setIsEditing(true);
+              setShowFormModal(true);
+              addToast(`Lỗi: ${result.message}`, false, true)
+          }
     } catch (error) {
         addToast(`"An error occur when updating employee!: ${error}`, false, true)
     }
@@ -131,19 +192,22 @@ const handleSubmit = async (e) => {
         try {
           const result = await createEmployee(formData);
 
+          console.log(result)
+
           if (result.status === "Success") {
-              const data = result.data;
-
-              addToast(`Create employee with code "${data.code}" successfully!`, true, false)
-
-              setEmployees(prevEmployee => [
-                  data,
-                  ...prevEmployee
-              ]);
-            setShowFormModal(true);
+            const data = result.data;
+            setEmployees(prevEmployee => [
+                data,
+                ...prevEmployee
+            ]);
+          
+            setIsEditing(false);
+            setShowFormModal(false);
             setErrors({})
+            addToast(`Create employee with code "${data.code}" successfully!`, true, false)
+
           } else {
-              setIsEditing(false);
+              setShowFormModal(true);
               addToast(`Lỗi: ${result.message}`, false, true)
               if (result.error) {
                   setErrors(result.error)
@@ -154,10 +218,6 @@ const handleSubmit = async (e) => {
       }
     }
 
-    loadData();
-    setShowFormModal(false);
-    resetForm();
-    setIsEditing(false);
   } catch (error) {
     addToast(`An error occur when adding or updating employee!: ${error}`, false, true)
   } finally {
@@ -183,12 +243,16 @@ const handleSubmit = async (e) => {
     setShowFormModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (empployee) => {
     if (window.confirm("Are you sure to delete this employee?")) {
       try {
         setLoading(true);
-        await deleteEmployee(id);
-        loadData();
+        const result = await deleteEmployee(empployee.id);
+        setEmployees(prevEmp =>
+              prevEmp.map(emp =>
+                  emp.email === result.email ? {  ...emp, deleted: true } : emp
+              )
+          );
       } catch (err) {
         setError("Cannot delete this employee");
         console.error(err);
@@ -198,11 +262,15 @@ const handleSubmit = async (e) => {
     }
   };
 
-  const handleRestore = async (id) => {
+  const handleRestore = async (empployee) => {
     try {
       setLoading(true);
-      await restoreEmployee(id);
-      loadData();
+      const result = await restoreEmployee(empployee.id);
+      setEmployees(prevEmp =>
+              prevEmp.map(emp =>
+                  emp.email === result.email ? {  ...emp, deleted: false } : emp
+              )
+          );
     } catch (err) {
       setError("Cannot restore employee");
       console.error(err);
@@ -210,25 +278,6 @@ const handleSubmit = async (e) => {
       setLoading(false);
     }
   };
-
-  const filteredData = employees.filter((e) => {
-    const matchUser = filters.userName
-      ? e.userName?.toLowerCase().includes(filters.userName.toLowerCase())
-      : true;
-    const matchName = filters.fullName
-      ? e.fullName?.toLowerCase().includes(filters.fullName.toLowerCase())
-      : true;
-    const matchEmail = filters.email
-      ? e.email?.toLowerCase().includes(filters.email.toLowerCase())
-      : true;
-    return matchUser && matchName && matchEmail;
-  });
-
-  // const renderStatus = (value) => (
-  //   <Badge bg={value ? "success" : "secondary"} className="fs-6">
-  //     {value ? "Hoạt động" : "Không hoạt động"}
-  //   </Badge>
-  // );
 
   const renderStatus = (value) => (
     <Badge bg={value ? "secondary" : "success"} className="fs-6">
@@ -378,7 +427,7 @@ const handleSubmit = async (e) => {
                       </Badge>
                     </Col>
                     <Col md={6}>
-                      <strong>Khóa:</strong>{" "}
+                      <strong>Locked:</strong>{" "}
                       <Badge bg={selectedEmployee.nonLocked ? "success" : "danger"}>
                         {selectedEmployee.nonLocked ? "Non locked" : "Locked"}
                       </Badge>
@@ -425,7 +474,7 @@ const handleSubmit = async (e) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((emp, idx) => (
+                  {employees.map((emp, idx) => (
                     <tr key={emp.id}>
                       <td>{idx + 1}</td>
                       <td>{emp.userName}</td>
@@ -438,18 +487,16 @@ const handleSubmit = async (e) => {
                       </td>
                       <td>
                         <div className="d-flex flex-column">
-                          {/* <small>Kích hoạt: {renderStatus(emp.enabled)}</small>
-                          <small>Khóa: {renderStatus(!emp.nonLocked)}</small> */}
                           <small>{renderStatus(emp.deleted)}</small>
                         </div>
                       </td>
                       <td>
                         <div className="d-flex">
-                          {emp.deleted ? (
+                          {emp.email == user.email ? <>Your account</> : <>{emp.deleted ? (
                             <Button
                               variant="outline-success"
                               size="sm"
-                              onClick={() => handleRestore(emp.id)}
+                              onClick={() => handleRestore(emp)}
                               title="Restore"
                               className="me-2"
                             >
@@ -478,13 +525,13 @@ const handleSubmit = async (e) => {
                               <Button
                                 variant="outline-danger"
                                 size="sm"
-                                onClick={() => handleDelete(emp.id)}
+                                onClick={() => handleDelete(emp)}
                                 title="Delete"
                               >
                                 <FaTrash />
                               </Button>
                             </>
-                          )}
+                          )}</>}
                         </div>
                       </td>
                     </tr>
@@ -495,6 +542,14 @@ const handleSubmit = async (e) => {
           )}
         </Card.Body>
       </Card>
+
+      <Pagination className="mt-4 justify-content-center">
+          {Array.from({ length: Math.ceil(totalPage) }, (_, i) => (
+              <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => handlePageChange(i + 1)}>
+                  {i + 1}
+              </Pagination.Item>
+          ))}
+      </Pagination>
 
       {/* Add/Edit Employee Modal */}
       <Modal show={showFormModal} onHide={() => setShowFormModal(false)} size="lg" centered>
@@ -513,11 +568,7 @@ const handleSubmit = async (e) => {
   </Modal.Header>
 
   <Modal.Body>
-    {/* {globalError && (
-  <Alert variant="danger" onClose={() => setGlobalError(null)} dismissible>
-    {globalError}
-  </Alert>
-)} */}
+
     <Form onSubmit={handleSubmit}>
       <Row>
         <Col md={6}>
@@ -557,6 +608,7 @@ const handleSubmit = async (e) => {
               type="email"
               name="email"
               value={formData.email}
+              disabled={isEditing}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
               className="py-2 fs-5"
