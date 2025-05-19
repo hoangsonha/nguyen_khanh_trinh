@@ -51,7 +51,7 @@ function EmployeeManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [totalElement, setTotalElement] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [isSearching, setIsSearching] = useState(false);
 

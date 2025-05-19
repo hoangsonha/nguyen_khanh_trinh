@@ -1,6 +1,5 @@
 package com.hsh.project.mapper;
 
-import com.hsh.project.dto.request.RoleRequestDTO;
 import com.hsh.project.dto.response.RoleResponseDTO;
 import com.hsh.project.pojo.Role;
 import org.mapstruct.Mapper;
@@ -13,7 +12,6 @@ import java.util.List;
 public interface RoleMapper {
     RoleMapper INSTANCE = Mappers.getMapper(RoleMapper.class);
 
-    Role toEntity(RoleRequestDTO roleRequestDTO);
     RoleResponseDTO toDTO(Role role);
     List<RoleResponseDTO> toDTOs(List<Role> roles);
 }

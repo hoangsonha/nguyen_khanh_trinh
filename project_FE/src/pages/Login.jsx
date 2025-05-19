@@ -56,7 +56,7 @@ const Login = () => {
                                     alt="Logo" 
                                     className="login-logo"
                                 /> */}
-                                <h2 className="mt-3 fw-bold text-gradient">ĐĂNG NHẬP HỆ THỐNG</h2>
+                                <h2 className="mt-3 fw-bold text-gradient">LOGIN</h2>
                             </div>
 
                             {show && (

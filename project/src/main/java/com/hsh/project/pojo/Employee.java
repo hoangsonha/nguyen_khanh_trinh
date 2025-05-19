@@ -18,10 +18,10 @@ public class Employee extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
 
-    @Column(columnDefinition = "NVARCHAR(255)", nullable = false)
+    @Column(columnDefinition = "NVARCHAR(255)", nullable = false, unique = true)
     String userName;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "NVARCHAR(255)", nullable = false)
     String fullName;
 
     @Column(unique = true, nullable = false)
@@ -33,6 +33,7 @@ public class Employee extends BaseEntity {
     @Column(unique = true, nullable = false)
     String phone;
 
+    @Column(nullable = false)
     String password;
 
     @Builder.Default

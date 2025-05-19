@@ -1,0 +1,32 @@
+package com.hsh.project.service.spec;
+
+import com.hsh.project.dto.AccountDTO;
+import com.hsh.project.dto.internal.PagingResponse;
+import com.hsh.project.dto.request.CreateEmployeeRequest;
+import com.hsh.project.dto.request.ProjectCreateRequest;
+import com.hsh.project.dto.request.UpdateEmployeeRequest;
+import com.hsh.project.dto.response.ProjectResponseDTO;
+import com.hsh.project.pojo.Employee;
+import com.hsh.project.pojo.Project;
+import org.apache.coyote.BadRequestException;
+
+import java.util.List;
+
+public interface ProjectService {
+    PagingResponse getAllProjectPaging(Integer currentPage, Integer pageSize);
+
+    PagingResponse searchProject(Integer currentPage, Integer pageSize, String name, String status);
+
+    List<ProjectResponseDTO> getProjects();
+
+    ProjectResponseDTO getProjectById(int id);
+
+    ProjectResponseDTO createProject(ProjectCreateRequest request);
+
+//    ProjectResponseDTO updateProject(UpdateEmployeeRequest request, int id);
+
+    Project getProjectsById(int id);
+
+    Project saveProject(Project project);
+
+}

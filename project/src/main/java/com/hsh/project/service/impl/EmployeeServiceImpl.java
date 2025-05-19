@@ -41,8 +41,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PagingResponse getAllAccountPaging(Integer currentPage, Integer pageSize) {
-        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
 
         Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
 
@@ -75,10 +73,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public PagingResponse searchEmployees(Integer currentPage, Integer pageSize, String userName, String fullName, String email) {
         Pageable pageable;
-
-        CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
-
         Specification<Employee> spec = Specification.where(null);
 
         List<String> keys = new ArrayList<>();
