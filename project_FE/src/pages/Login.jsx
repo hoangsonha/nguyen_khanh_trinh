@@ -67,7 +67,7 @@ const Login = () => {
                                     className="animate__animated animate__shakeX"
                                 >
                                     <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                                    Sai tài khoản hoặc mật khẩu. Vui lòng thử lại!
+                                    Wrong account or password. Please try again!
                                 </Alert>
                             )}
 
@@ -84,7 +84,7 @@ const Login = () => {
                                     />
                                     <Form.Label htmlFor="username">
                                         <i className="bi bi-person-fill me-2"></i>
-                                        Tài khoản
+                                        Email
                                     </Form.Label>
                                 </Form.Group>
                                 
@@ -100,7 +100,7 @@ const Login = () => {
                                     />
                                     <Form.Label htmlFor="password">
                                         <i className="bi bi-lock-fill me-2"></i>
-                                        Mật khẩu
+                                       Password
                                     </Form.Label>
                                 </Form.Group>
 
@@ -120,12 +120,12 @@ const Login = () => {
                                                 aria-hidden="true"
                                                 className="me-2"
                                             />
-                                            Đang đăng nhập...
+                                            Login...
                                         </>
                                     ) : (
                                         <>
                                             <i className="bi bi-box-arrow-in-right me-2"></i>
-                                            ĐĂNG NHẬP
+                                            LOGIN
                                         </>
                                     )}
                                 </Button>
@@ -133,7 +133,7 @@ const Login = () => {
                                 <div className="text-center mt-4">
                                     <a href="/forgot-password" className="text-decoration-none link-secondary">
                                         <i className="bi bi-question-circle-fill me-2"></i>
-                                        Quên mật khẩu?
+                                        Forget password?
                                     </a>
                                 </div>
                             </Form>

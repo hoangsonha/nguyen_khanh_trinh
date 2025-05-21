@@ -37,7 +37,7 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
-    public ResponseEntity<PagingResponse> getAllPurposes(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+    public ResponseEntity<PagingResponse> getAllEmployee(@RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                          @RequestParam(value = "pageSize", required = false) Integer pageSize) {
         int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
         int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;

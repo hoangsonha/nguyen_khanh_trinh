@@ -42,7 +42,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("")
-    public ResponseEntity<PagingResponse> getAllPurposes(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+    public ResponseEntity<PagingResponse> getAllProject(@RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                          @RequestParam(value = "pageSize", required = false) Integer pageSize) {
         int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
         int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;
@@ -51,9 +51,36 @@ public class ProjectController {
         return ResponseEntity.status(!data.isEmpty() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(results);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER') or hasRole('MANAGER')")
+    @GetMapping("/{id}/employee")
+    public ResponseEntity<PagingResponse> getAllProjectByUserId(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                @RequestParam(value = "pageSize", required = false) Integer pageSize,
+                                                                @PathVariable("id") int id) {
+        int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
+        int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;
+        PagingResponse results = projectService.getAllProjectByUserId(resolvedCurrentPage, resolvedPageSize, id);
+        List<?> data = (List<?>) results.getData();
+        return ResponseEntity.status(!data.isEmpty() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(results);
+    }
+
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @GetMapping("/search/{id}/employee")
+    public ResponseEntity<PagingResponse> searchProjectByEmployeeId(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                    @RequestParam(value = "pageSize", required = false) Integer pageSize,
+                                                                    @RequestParam(value = "name", required = false, defaultValue = "") String name,
+                                                                    @RequestParam(value = "status", required = false, defaultValue = "") String status,
+                                                                    @PathVariable("id") int id) {
+        int resolvedCurrentPage = (currentPage != null) ? currentPage : defaultCurrentPage;
+        int resolvedPageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PagingResponse results = projectService.searchProjectByEmployeeId(resolvedCurrentPage, resolvedPageSize, name, status, id);
+        List<?> data = (List<?>) results.getData();
+        return ResponseEntity.status(!data.isEmpty() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(results);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/non-paging")
-    public ResponseEntity<ObjectResponse> getAllAccountsNonPaging() {
+    public ResponseEntity<ObjectResponse> getAllProjectNonPaging() {
         List<ProjectResponseDTO> results = projectService.getProjects();
         return !results.isEmpty() ? ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "get all hub non paging successfully", results)) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Failed", "get all hub non paging failed", results));
@@ -61,7 +88,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/search")
-    public ResponseEntity<PagingResponse> searchVaccines(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+    public ResponseEntity<PagingResponse> searchProject(@RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                          @RequestParam(value = "pageSize", required = false) Integer pageSize,
                                                          @RequestParam(value = "name", required = false, defaultValue = "") String name,
                                                          @RequestParam(value = "status", required = false, defaultValue = "") String status) {
@@ -75,7 +102,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('USER') or hasRole('MANAGER') or hasRole('STAFF') or hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<ObjectResponse> getHubByID(@PathVariable("id") int id) {
+    public ResponseEntity<ObjectResponse> getProjectByID(@PathVariable("id") int id) {
         ProjectResponseDTO hub = projectService.getProjectById(id);
         return hub != null ?
                 ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Get hub by ID successfully", hub)) :
@@ -85,7 +112,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
-    public ResponseEntity<ObjectResponse> createEmployee(@Valid @RequestBody ProjectCreateRequest req) {
+    public ResponseEntity<ObjectResponse> createProject(@Valid @RequestBody ProjectCreateRequest req) {
         try {
             ProjectResponseDTO employee = projectService.createProject(req);
             return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Create hub successfully", employee));
@@ -101,33 +128,33 @@ public class ProjectController {
         }
     }
 
-//    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ObjectResponse> updateHub(@PathVariable("id") int id, @RequestBody UpdateEmployeeRequest req) {
-//        try {
-//            AccountDTO employee = projectService.updateProject(req, id);
-//            if (employee != null) {
-//                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update hub successfully", employee));
-//            }
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub is null", null));
-//        } catch (BadRequestException e) {
-//            log.error("Error creating hub", e);
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
-//        } catch (ElementExistException e) {
-//            log.error("Error while updating hub", e);
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
-//        } catch (ElementNotFoundException e) {
-//            log.error("Error while updating hub", e);
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update Employee failed. Employee not found", null));
-//        } catch (Exception e) {
-//            log.error("Error updating hub", e);
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed", null));
-//        }
-//    }
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ObjectResponse> updateProject(@PathVariable("id") int id, @RequestBody ProjectCreateRequest req) {
+        try {
+            ProjectResponseDTO employee = projectService.updateProject(req, id);
+            if (employee != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update hub successfully", employee));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed. Hub is null", null));
+        } catch (BadRequestException e) {
+            log.error("Error creating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
+        } catch (ElementExistException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", e.getMessage(), null));
+        } catch (ElementNotFoundException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update Employee failed. Employee not found", null));
+        } catch (Exception e) {
+            log.error("Error updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update hub failed", null));
+        }
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ObjectResponse> deleteHubByID(@PathVariable("id") int hubID) {
+    public ResponseEntity<ObjectResponse> deleteProjectByID(@PathVariable("id") int hubID) {
         try {
             Project hub = projectService.getProjectsById(hubID);
             if (hub != null) {
@@ -144,12 +171,12 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     @PostMapping("/{id}/restore")
-    public ResponseEntity<ObjectResponse> unDeleteHubByID(@PathVariable("id") int id) {
+    public ResponseEntity<ObjectResponse> unDeleteProjectByID(@PathVariable("id") int id) {
         try {
             Project hub = projectService.getProjectsById(id);
             if (hub != null) {
                 hub.setDeleted(false);
-                hub.setProjectStatus(TaskStatus.in_progress);
+                hub.setProjectStatus(TaskStatus.not_started);
                 return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "UnDelete hub successfully", projectService.saveProject(hub)));
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Employee is null", null));

@@ -1,5 +1,7 @@
 package com.hsh.project.pojo;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hsh.project.pojo.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,7 +41,8 @@ public class Project extends BaseEntity {
     @JoinColumn(name = "created_by")
     Employee createdBy;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     List<ProjectMember> members;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)

@@ -1,5 +1,7 @@
 package com.hsh.project.pojo;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,10 +24,12 @@ public class ProjectMember extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "project_id")
+    @JsonManagedReference
     Project project;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
+    @JsonManagedReference
     Employee employee;
 
     String status;

@@ -140,11 +140,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<AccountDTO> getAccounts() {
-
         CustomAccountDetail accountDetail = (CustomAccountDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Employee user = employeeRepository.getAccountByEmail(accountDetail.getEmail());
 
-        return employeeRepository.findAll().stream().filter(e -> !e.getId().equals(user.getId())).map(accountMapper::accountToAccountDTO).collect(Collectors.toList());
+        return employeeRepository.findAll().stream()
+                .filter(e -> !e.getId().equals(user.getId()))
+                .filter(e -> e.getRole() != null && e.getRole().getRoleName() == EnumRoleNameType.ROLE_USER)
+                .map(accountMapper::accountToAccountDTO)
+                .collect(Collectors.toList());
     }
 
     @Override

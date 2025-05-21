@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -21,5 +22,6 @@ public class ProjectCreateRequest {
     LocalDate startDate;
     LocalDate endDate;
     String projectStatus;
+    List<Integer> employeeIds;
 
 }

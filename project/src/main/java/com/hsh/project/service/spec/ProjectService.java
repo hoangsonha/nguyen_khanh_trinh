@@ -17,13 +17,17 @@ public interface ProjectService {
 
     PagingResponse searchProject(Integer currentPage, Integer pageSize, String name, String status);
 
+    PagingResponse searchProjectByEmployeeId(Integer currentPage, Integer pageSize, String name, String status, int id);
+
+    PagingResponse getAllProjectByUserId(Integer currentPage, Integer pageSize, int userId);
+
     List<ProjectResponseDTO> getProjects();
 
     ProjectResponseDTO getProjectById(int id);
 
     ProjectResponseDTO createProject(ProjectCreateRequest request);
 
-//    ProjectResponseDTO updateProject(UpdateEmployeeRequest request, int id);
+    ProjectResponseDTO updateProject(ProjectCreateRequest request, int id);
 
     Project getProjectsById(int id);
 

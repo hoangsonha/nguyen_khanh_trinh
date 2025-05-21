@@ -2,14 +2,14 @@ import { ROLES } from "./Roles";
 import EmployeeManagement from "../pages/EmployeeManagement";
 import CompanyManagement from "../pages/CompanyManagement";
 import ProjectManagement from "../pages/ProjectManagement";
-import InformationUser from "../pages/InformationUser";
 import Empty from "../pages/Empty";
+import Project from "../pages/Project";
 
 export const PATHS = {
     VACCINES: {
-        path: '/vaccines',
-        label: 'Vaccines',
-        element: <Empty />,
+        path: '/projects',
+        label: 'My Projects',
+        element: <Project />,
         allowedRoles: [ROLES.USER, ROLES.MANAGER, ROLES.STAFF]
     },
     // COMBO_VACCINE: {

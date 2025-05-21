@@ -22,9 +22,9 @@ public class ProjectResponseDTO {
     LocalDate endDate;
     String projectStatus;
     int employeeId;
-    String employeeUserName;
-    String employeeName;
+    String employeeEmail;
+    String employeeFullName;
     String employeeCode;
-    List<ProjectMember> members;
+    List<ProjectMemberResponseDTO> members;
     List<Task> tasks;
 }

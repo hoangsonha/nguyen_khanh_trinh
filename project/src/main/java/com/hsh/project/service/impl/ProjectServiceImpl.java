@@ -27,12 +27,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -137,6 +137,98 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public PagingResponse searchProjectByEmployeeId(Integer currentPage, Integer pageSize, String name, String status, int id) {
+        Pageable pageable;
+
+        Specification<Project> spec = Specification.where(null);
+
+        List<String> keys = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+
+        String searchName = "";
+        if (StringUtils.hasText(name)) {
+            searchName = name;
+        }
+        keys.add("name");
+        values.add(searchName);
+
+        String searchStatus = "";
+        if (StringUtils.hasText(status)) {
+            searchStatus = status;
+        }
+        keys.add("status");
+        values.add(searchStatus);
+
+        if(keys.size() == values.size()) {
+            for(int i = 0; i < keys.size(); i++) {
+                String field = keys.get(i);
+                String value = values.get(i);
+                Specification<Project> newSpec = ProjectSpecification.searchByField(field, value);
+                if(newSpec != null) {
+                    spec = spec.and(newSpec);
+                }
+            }
+        }
+
+        pageable = PageRequest.of(currentPage - 1, pageSize);
+
+        var pageData = projectRepository.findAllByEmployeeId(id, pageable, spec);
+
+        return !pageData.getContent().isEmpty() ? PagingResponse.builder()
+                .code("Success")
+                .message("Get all employees paging successfully")
+                .currentPage(currentPage)
+                .pageSize(pageSize)
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .data(pageData.getContent().stream()
+                        .map(projectMapper::projectToProjectResponseDTO)
+                        .toList())
+                .build() :
+                PagingResponse.builder()
+                        .code("Failed")
+                        .message("Get all employees paging failed")
+                        .currentPage(currentPage)
+                        .pageSize(pageSize)
+                        .totalElements(pageData.getTotalElements())
+                        .totalPages(pageData.getTotalPages())
+                        .data(pageData.getContent().stream()
+                                .map(projectMapper::projectToProjectResponseDTO)
+                                .toList())
+                        .build();
+    }
+
+    @Override
+    public PagingResponse getAllProjectByUserId(Integer currentPage, Integer pageSize, int userId) {
+        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
+
+        var pageData = projectRepository.findAllByEmployeeId(userId, pageable);
+
+        return !pageData.getContent().isEmpty() ? PagingResponse.builder()
+                .code("Success")
+                .message("Get all project paging successfully")
+                .currentPage(currentPage)
+                .pageSize(pageSize)
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .data(pageData.getContent().stream()
+                        .map(projectMapper::projectToProjectResponseDTO)
+                        .toList())
+                .build() :
+                PagingResponse.builder()
+                        .code("Failed")
+                        .message("Get all project paging failed")
+                        .currentPage(currentPage)
+                        .pageSize(pageSize)
+                        .totalElements(pageData.getTotalElements())
+                        .totalPages(pageData.getTotalPages())
+                        .data(pageData.getContent().stream()
+                                .map(projectMapper::projectToProjectResponseDTO)
+                                .toList())
+                        .build();
+    }
+
+    @Override
     public List<ProjectResponseDTO> getProjects() {
 
         return projectRepository.findAll().stream().map(projectMapper::projectToProjectResponseDTO).collect(Collectors.toList());
@@ -154,6 +246,7 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.projectToProjectResponseDTO(e);
     }
 
+    @Transactional
     @Override
     public ProjectResponseDTO createProject(ProjectCreateRequest request) {
 
@@ -172,6 +265,8 @@ public class ProjectServiceImpl implements ProjectService {
             if (request.getStartDate().isBefore(now)) {
                 throw new BadRequestException("Start date cannot be before current date");
             }
+        } else {
+            throw new BadRequestException("Project must have a start date");
         }
 
         if (request.getEndDate() != null) {
@@ -197,54 +292,108 @@ public class ProjectServiceImpl implements ProjectService {
                 .members(null)
                 .build();
 
+        if (!request.getEmployeeIds().isEmpty()) {
+            List<Employee> allEmployees = employeeRepository.findAllById(request.getEmployeeIds());
+
+            List<ProjectMember> li = new ArrayList<>();
+
+            for (Employee e : allEmployees) {
+                ProjectMember pm = ProjectMember.builder()
+                        .employee(e)
+                        .project(newProject)
+                        .roleInProject(e.getRole().getRoleName().toString())
+                        .status(String.valueOf(TaskStatus.in_progress))
+                        .build();
+                li.add(pm);
+            }
+
+            newProject.setMembers(li);
+        }
+
         return projectMapper.projectToProjectResponseDTO(projectRepository.save(newProject));
     }
 
-//    @Override
-//    public ProjectResponseDTO updateProject(UpdateEmployeeRequest request, int id) {
-//
-//        Employee employee = employeeRepository.findById(id).orElse(null);
-//
-//        if (employee == null) {
-//            throw new ElementNotFoundException("Employee not found");
-//        } else {
-//            if (request.getCode() != null) {
-//                if (!employee.getCode().equals(request.getCode())) {
-//                    Employee employee2 = employeeRepository.findByCode(request.getCode());
-//                    if (employee2 != null) {
-//                        throw new ElementExistException("Code already exists");
-//                    }
+    @Transactional
+    @Override
+    public ProjectResponseDTO updateProject(ProjectCreateRequest request, int id) {
+
+        Project project = projectRepository.findById(id).orElse(null);
+
+        if (project == null) {
+            throw new ElementNotFoundException("Project not found");
+        } else {
+            if (request.getName() != null) {
+                project.setName(request.getName());
+            }
+            if (request.getDescription() != null) {
+                project.setDescription(request.getDescription());
+            }
+
+            if (request.getStartDate() != null && request.getEndDate() != null) {
+//                LocalDate now = LocalDate.now();
+                LocalDate previousStartDate = project.getStartDate();
+                LocalDate previousEndDate = project.getEndDate();
+
+//                if (request.getEndDate().isBefore(now)) {
+//                    throw new BadRequestException("End date cannot be before current date");
 //                }
-//                employee.setCode(request.getCode());
-//            }
-//
-//            if (!request.getPhone().matches("^0\\d{9}$")) {
-//                throw new BadRequestException("Số điện thoại không hợp lệ. Số điện thoại phải bắt đầu bằng số 0 và gồm 10 chữ số.");
-//            }
-//
-//            if (request.getPhone() != null) {
-//                if (!employee.getPhone().equals(request.getPhone())) {
-//                    Employee employee2 = employeeRepository.findByPhone(request.getPhone());
-//                    if (employee2 != null) {
-//                        throw new ElementExistException("Phone already exists");
-//                    }
+//                if (request.getStartDate().isBefore(now)) {
+//                    throw new BadRequestException("Start date cannot be before current date");
 //                }
-//                employee.setCode(request.getCode());
-//            }
-//
-//            if (request.getUserName() != null) {
-//                employee.setUserName(request.getUserName());
-//            }
-//            if (request.getFullName() != null) {
-//                employee.setFullName(request.getFullName());
-//            }
-//            if (request.getRoleName() != null) {
-//                Role role = roleRepository.getRoleByRoleName(EnumRoleNameType.valueOf(request.getRoleName()));
-//                employee.setRole(role);
-//            }
-//            return accountMapper.accountToAccountDTO(employeeRepository.save(employee));
-//        }
-//    }
+                if (request.getStartDate().isAfter(request.getEndDate())) {
+                    throw new BadRequestException("Start date cannot be after end date");
+                }
+
+                if (!request.getStartDate().equals(previousStartDate)) {
+                    if (request.getStartDate().isBefore(previousStartDate)) {
+                        throw new BadRequestException("Start date cannot be before previous date");
+                    }
+                    project.setStartDate(request.getStartDate());
+                }
+                if (!request.getEndDate().equals(previousEndDate)) {
+                    if (request.getEndDate().isBefore(request.getStartDate())) {
+                        throw new BadRequestException("End date cannot be before start date");
+                    }
+                    project.setEndDate(request.getEndDate());
+                }
+            }
+            if (request.getProjectStatus() != null) {
+                project.setProjectStatus(TaskStatus.valueOf(request.getProjectStatus()));
+            }
+
+            List<Integer> newEmployeeIds = request.getEmployeeIds();
+
+            if (newEmployeeIds != null) {
+                Set<Integer> existingEmployeeIds = project.getMembers().stream()
+                        .map(pm -> pm.getEmployee().getId())
+                        .collect(Collectors.toSet());
+
+                Set<Integer> newEmployeeIdSet = new HashSet<>(newEmployeeIds);
+
+                // Xoá các thành viên không còn trong danh sách mới
+                project.getMembers().removeIf(pm -> !newEmployeeIdSet.contains(pm.getEmployee().getId()));
+
+                // Thêm các thành viên mới
+                for (Integer newId : newEmployeeIdSet) {
+                    if (!existingEmployeeIds.contains(newId)) {
+                        Employee e = employeeRepository.findById(newId)
+                                .orElseThrow(() -> new ElementNotFoundException("Employee not found"));
+
+                        ProjectMember pm = ProjectMember.builder()
+                                .employee(e)
+                                .project(project)
+                                .roleInProject(e.getRole().getRoleName().toString())
+                                .status(String.valueOf(TaskStatus.in_progress))
+                                .build();
+
+                        project.getMembers().add(pm);
+                    }
+                }
+            }
+
+            return projectMapper.projectToProjectResponseDTO(projectRepository.save(project));
+        }
+    }
 
     @Override
     public Project getProjectsById(int id) {

@@ -21,7 +21,18 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
+            TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+            BACKUP_DIR=~/nguyen_khanh_trinh/db_backups
+            mkdir -p $BACKUP_DIR
+            echo "🔹 Backup MySQL database sgiant_project ..."
+            docker exec employee_db sh -c 'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" sgiant_project' | gzip > $BACKUP_DIR/backup_${TIMESTAMP}.sql.gz
+            echo "🔹 Cleaning old backups, keep only 5 newest ..."
+            cd $BACKUP_DIR
+            ls -1t | tail -n +6 | xargs -r rm --
+            echo "🔹 Pull latest code ..."
             cd ~/nguyen_khanh_trinh
             git pull origin main
+            echo "🔹 Restart docker compose ..."
             docker compose down
             docker compose up -d --build

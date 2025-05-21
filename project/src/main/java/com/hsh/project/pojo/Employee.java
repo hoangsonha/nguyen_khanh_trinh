@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -49,6 +51,10 @@ public class Employee extends BaseEntity {
     String refreshToken;
 
     @ManyToOne
+    @JoinColumn(name = "role_id")
     Role role;
+
+    @OneToMany(mappedBy = "employee")
+    List<ProjectMember> memberships;
 
 }
