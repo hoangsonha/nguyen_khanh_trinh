@@ -1,26 +1,19 @@
 package com.hsh.project.service.impl;
 
 import com.hsh.project.configuration.CustomAccountDetail;
-import com.hsh.project.dto.AccountDTO;
 import com.hsh.project.dto.internal.PagingResponse;
-import com.hsh.project.dto.request.CreateEmployeeRequest;
 import com.hsh.project.dto.request.ProjectCreateRequest;
-import com.hsh.project.dto.request.UpdateEmployeeRequest;
 import com.hsh.project.dto.response.ProjectResponseDTO;
 import com.hsh.project.exception.BadRequestException;
 import com.hsh.project.exception.ElementExistException;
 import com.hsh.project.exception.ElementNotFoundException;
 import com.hsh.project.mapper.ProjectMapper;
 import com.hsh.project.pojo.*;
-import com.hsh.project.pojo.enums.EnumRoleNameType;
 import com.hsh.project.pojo.enums.TaskStatus;
 import com.hsh.project.repository.EmployeeRepository;
 import com.hsh.project.repository.ProjectRepository;
 import com.hsh.project.service.spec.ProjectService;
-import com.hsh.project.utils.EmployeeSpecification;
 import com.hsh.project.utils.ProjectSpecification;
-import jakarta.persistence.*;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 

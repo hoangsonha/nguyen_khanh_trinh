@@ -63,7 +63,7 @@ const Header = () => {
                                 <Dropdown.Menu className="dropdown-menu">
                                     <Dropdown.Item as={Link} to="/profile" className="dropdown-item">
                                         <i className="bi bi-person me-3"></i>
-                                        Hồ sơ cá nhân
+                                        Profile
                                     </Dropdown.Item>
                                     <Dropdown.Divider />
                                     <Dropdown.Item 
@@ -74,7 +74,7 @@ const Header = () => {
                                         className="dropdown-item text-danger"
                                     >
                                         <i className="bi bi-box-arrow-right me-3"></i>
-                                        Đăng xuất
+                                        Logout
                                     </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>

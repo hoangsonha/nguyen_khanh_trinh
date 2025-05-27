@@ -21,7 +21,7 @@ public class AccountLoginRequest {
 
     @NotNull(message = "Please enter password")
     @NotBlank(message = "Password is not blank")
-    @Size(max = 100, min = 6, message = "Password must be between 6 and 100 characters")
+    @Size(max = 100, min = 1, message = "Password must be between 6 and 100 characters")
     private String password;
 
 }

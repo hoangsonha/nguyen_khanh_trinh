@@ -3,14 +3,13 @@ package com.hsh.project.service.impl;
 import com.hsh.project.configuration.CustomAccountDetail;
 import com.hsh.project.configuration.JWTAuthenticationFilter;
 import com.hsh.project.configuration.JWTToken;
-import com.hsh.project.dto.AccountDTO;
-import com.hsh.project.dto.internal.PagingResponse;
+import com.hsh.project.dto.response.EmployeeResponseDTO;
 import com.hsh.project.dto.request.AccountRegisterRequest;
 import com.hsh.project.dto.response.TokenResponse;
 import com.hsh.project.exception.ElementExistException;
 import com.hsh.project.exception.ElementNotFoundException;
 import com.hsh.project.exception.EntityNotFoundException;
-import com.hsh.project.mapper.AccountMapper;
+import com.hsh.project.mapper.EmployeeMapper;
 import com.hsh.project.pojo.Employee;
 import com.hsh.project.pojo.Role;
 import com.hsh.project.pojo.enums.EnumRoleNameType;
@@ -20,8 +19,6 @@ import com.hsh.project.service.spec.AccountService;
 import com.hsh.project.service.spec.RoleService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -55,7 +52,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountDTO registerAccount(AccountRegisterRequest accountRegisterRequest) {
+    public EmployeeResponseDTO registerAccount(AccountRegisterRequest accountRegisterRequest) {
         Employee checkExistingUser = employeeRepository.getAccountByEmail(accountRegisterRequest.getEmail());
         if (checkExistingUser != null) {
             throw new ElementExistException("Tài khoản đã tồn tại");
@@ -76,7 +73,7 @@ public class AccountServiceImpl implements AccountService {
                 .role(role)
                 .build();
 
-        return AccountMapper.INSTANCE.accountToAccountDTO(employeeRepository.save(user));
+        return EmployeeMapper.INSTANCE.employeeToEmployeeResponseDTO(employeeRepository.save(user));
     }
 
     @Override

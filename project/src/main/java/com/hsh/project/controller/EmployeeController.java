@@ -1,6 +1,6 @@
 package com.hsh.project.controller;
 
-import com.hsh.project.dto.AccountDTO;
+import com.hsh.project.dto.response.EmployeeResponseDTO;
 import com.hsh.project.dto.internal.ObjectResponse;
 import com.hsh.project.dto.internal.PagingResponse;
 import com.hsh.project.dto.request.CreateEmployeeRequest;
@@ -48,15 +48,15 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/non-paging")
-    public ResponseEntity<ObjectResponse> getAllAccountsNonPaging() {
-        List<AccountDTO> results = employeeService.getAccounts();
+    public ResponseEntity<ObjectResponse> getAllEmployeesNonPaging() {
+        List<EmployeeResponseDTO> results = employeeService.getAccounts();
         return !results.isEmpty() ? ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "get all hub non paging successfully", results)) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Failed", "get all hub non paging failed", results));
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/search")
-    public ResponseEntity<PagingResponse> searchVaccines(@RequestParam(value = "currentPage", required = false) Integer currentPage,
+    public ResponseEntity<PagingResponse> searchEmployee(@RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                          @RequestParam(value = "pageSize", required = false) Integer pageSize,
                                                          @RequestParam(value = "userName", required = false, defaultValue = "") String userName,
                                                          @RequestParam(value = "fullName", required = false, defaultValue = "") String fullName,
@@ -71,8 +71,8 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('USER') or hasRole('MANAGER') or hasRole('STAFF') or hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<ObjectResponse> getHubByID(@PathVariable("id") int id) {
-        AccountDTO hub = employeeService.getAccountById(id);
+    public ResponseEntity<ObjectResponse> getEmployeeByID(@PathVariable("id") int id) {
+        EmployeeResponseDTO hub = employeeService.getAccountById(id);
         return hub != null ?
                 ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Get hub by ID successfully", hub)) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Get hub by ID failed", null));
@@ -83,7 +83,7 @@ public class EmployeeController {
     @PostMapping("")
     public ResponseEntity<ObjectResponse> createEmployee(@Valid @RequestBody CreateEmployeeRequest req) {
         try {
-            AccountDTO employee = employeeService.createEmployee(req);
+            EmployeeResponseDTO employee = employeeService.createEmployee(req);
             return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Create hub successfully", employee));
         } catch (BadRequestException e) {
             log.error("Error creating hub", e);
@@ -99,9 +99,9 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ObjectResponse> updateHub(@PathVariable("id") int id, @RequestBody UpdateEmployeeRequest req) {
+    public ResponseEntity<ObjectResponse> updateEmployee(@PathVariable("id") int id, @RequestBody UpdateEmployeeRequest req) {
         try {
-            AccountDTO employee = employeeService.updateEmployee(req, id);
+            EmployeeResponseDTO employee = employeeService.updateEmployee(req, id);
             if (employee != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Update hub successfully", employee));
             }
@@ -125,13 +125,14 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ObjectResponse> deleteHubByID(@PathVariable("id") int hubID) {
         try {
-            Employee hub = employeeService.getEmployeeById(hubID);
+            EmployeeResponseDTO hub = employeeService.deleteEmployee(hubID);
             if(hub != null) {
-                hub.setDeleted(true);
-                hub.setEnabled(false);
-                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Delete hub successfully", employeeService.saveEmployee(hub)));
+                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "Delete hub successfully", hub));
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
+        } catch (ElementNotFoundException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update Employee failed" + e.getMessage(), null));
         } catch (Exception e) {
             log.error("Error deleting hub", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Delete hub failed", null));
@@ -142,13 +143,14 @@ public class EmployeeController {
     @PostMapping("/{id}/restore")
     public ResponseEntity<ObjectResponse> unDeleteHubByID(@PathVariable("id") int id) {
         try {
-            Employee hub = employeeService.getEmployeeById(id);
+            EmployeeResponseDTO hub = employeeService.restoreEmployee(id);
             if(hub != null) {
-                hub.setDeleted(false);
-                hub.setEnabled(true);
-                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "UnDelete hub successfully", employeeService.saveEmployee(hub)));
+                return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse("Success", "UnDelete hub successfully", hub));
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Employee is null", null));
+        } catch (ElementNotFoundException e) {
+            log.error("Error while updating hub", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Update Employee failed" + e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ObjectResponse("Fail", "Undelete hub failed", null));
         }

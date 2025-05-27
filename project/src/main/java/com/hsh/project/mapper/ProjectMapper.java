@@ -1,9 +1,7 @@
 package com.hsh.project.mapper;
 
-import com.hsh.project.dto.AccountDTO;
 import com.hsh.project.dto.response.ProjectMemberResponseDTO;
 import com.hsh.project.dto.response.ProjectResponseDTO;
-import com.hsh.project.pojo.Employee;
 import com.hsh.project.pojo.Project;
 import com.hsh.project.pojo.ProjectMember;
 import org.mapstruct.Mapper;

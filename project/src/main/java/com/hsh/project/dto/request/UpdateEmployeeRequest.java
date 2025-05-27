@@ -1,10 +1,15 @@
 package com.hsh.project.dto.request;
 
+import com.hsh.project.pojo.enums.SalaryType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -12,22 +17,16 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEmployeeRequest {
-    @NotBlank(message = "Username không được để trống")
+
     String userName;
-
-    @NotBlank(message = "Họ tên không được để trống")
     String fullName;
-
-//    @Email(message = "Email không hợp lệ")
-//    @NotBlank(message = "Email không được để trống")
-//    String email;
-
-    @NotBlank(message = "Mã nhân viên không được để trống")
     String code;
-
-    @NotBlank(message = "Số điện thoại không được để trống")
     String phone;
-
-    @NotNull(message = "Role không được để trống")
     String roleName;
+
+     LocalDate startDate; // chỉ set nếu là quay lại
+     LocalDate endDate;
+     String salaryType;
+     BigDecimal baseSalary;
+     String note;
 }

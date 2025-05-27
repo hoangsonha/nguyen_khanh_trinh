@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-import java.time.YearMonth;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,25 +13,19 @@ import java.time.YearMonth;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "salaries")
-// 	Kết quả tính lương hàng tháng (cả FIXED & HOURLY)
-public class Salary extends BaseEntity {
-
+@Table(name = "work_log")
+//Nhật ký làm việc theo giờ (chỉ dùng nếu salaryType = HOURLY)
+public class WorkLog extends BaseEntity  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    Long id;
 
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     Employee employee;
 
-    YearMonth payMonth;
+    LocalDateTime startTime;
+    LocalDateTime endTime;
 
-    BigDecimal baseSalary;
-    BigDecimal bonus;
-
-    BigDecimal totalSalary;
-
-    String note;
-
+    String description;
 }

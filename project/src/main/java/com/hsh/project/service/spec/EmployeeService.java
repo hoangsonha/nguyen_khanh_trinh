@@ -1,6 +1,6 @@
 package com.hsh.project.service.spec;
 
-import com.hsh.project.dto.AccountDTO;
+import com.hsh.project.dto.response.EmployeeResponseDTO;
 import com.hsh.project.dto.internal.PagingResponse;
 import com.hsh.project.dto.request.CreateEmployeeRequest;
 import com.hsh.project.dto.request.UpdateEmployeeRequest;
@@ -15,15 +15,20 @@ public interface EmployeeService {
 
     PagingResponse searchEmployees(Integer currentPage, Integer pageSize, String userName, String fullName, String email);
 
-    List<AccountDTO> getAccounts();
+    List<EmployeeResponseDTO> getAccounts();
 
-    AccountDTO getAccountById(int id);
+    EmployeeResponseDTO getAccountById(int id);
 
-    AccountDTO createEmployee(CreateEmployeeRequest request) throws BadRequestException;
+    EmployeeResponseDTO createEmployee(CreateEmployeeRequest request) throws BadRequestException;
 
-    AccountDTO updateEmployee(UpdateEmployeeRequest request, int id);
+    EmployeeResponseDTO updateEmployee(UpdateEmployeeRequest request, int id);
 
     Employee getEmployeeById(int id);
 
     Employee saveEmployee(Employee employee);
+
+    EmployeeResponseDTO deleteEmployee(int id);
+
+    EmployeeResponseDTO restoreEmployee(int id);
+
 }

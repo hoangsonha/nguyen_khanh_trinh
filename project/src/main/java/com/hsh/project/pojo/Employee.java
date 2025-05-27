@@ -57,4 +57,7 @@ public class Employee extends BaseEntity {
     @OneToMany(mappedBy = "employee")
     List<ProjectMember> memberships;
 
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @OrderBy("startDate DESC")
+    List<EmploymentHistory> employmentHistories;
 }

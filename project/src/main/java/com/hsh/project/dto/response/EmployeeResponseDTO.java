@@ -1,14 +1,16 @@
-package com.hsh.project.dto;
+package com.hsh.project.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Value
+import java.util.List;
+
+@Data
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AccountDTO {
+public class EmployeeResponseDTO {
     int id;
     String userName;
     String phone;
@@ -19,4 +21,6 @@ public class AccountDTO {
     boolean enabled;
     boolean nonLocked;
     boolean deleted;
+
+    List<EmploymentHistoryResponseDTO> employmentHistories;
 }

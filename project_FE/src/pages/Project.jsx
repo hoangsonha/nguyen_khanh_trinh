@@ -160,7 +160,7 @@ function Project() {
         <Col>
           <h2 className="fw-bold text-center">
             <i className="bi bi-folder me-2"></i>
-            YOUR PROJECTS
+            MY PROJECTS
           </h2>
           <hr />
         </Col>

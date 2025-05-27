@@ -18,7 +18,7 @@ public class AccountRegisterRequest {
     private String email;
 
     @NotBlank(message = "Vui lòng nhập mật khẩu")
-    @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6 tới 100 kí tự")
+    @Size(min = 1, max = 100, message = "Mật khẩu phải từ 6 tới 100 kí tự")
     private String password;
 
     @NotBlank(message = "Vui lòng nhập tên")
